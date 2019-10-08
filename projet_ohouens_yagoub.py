@@ -17,7 +17,8 @@ class Graphe():
         
     def estimClass(self, attrs):
         return 1.0
-"""    
+"""
+
 def importGrapheFromTxt(file):
     """
     params : 
@@ -29,29 +30,53 @@ def importGrapheFromTxt(file):
         sommets = [] #liste des sommets
         aretes  = [] #liste des couples (sommet, sommet) (arêtes)
         ligne = f.readline()
-        checkpoint = "Sommets"
+        checkpoint = "Sommets" #checkpoint initial
+        
         while(ligne):
             ligne = ligne.replace("\n", "")
             ligne = ligne.replace("\t", "")
-            ligne = ligne.replace(" ", "")
-            #print(checkpoint)
-            print(str.isnumeric(ligne))
-            if(not str.isnumeric(ligne)):
+            if(checkpoint != "Aretes"):
+                ligne = ligne.replace(" ", "")
+                
+            if(not str.isnumeric(ligne) and checkpoint != "Aretes"):
                 checkpoint = ligne
-                #print(checkpoint)
+                
             if(checkpoint == "Sommets"):
-                if(not str.isnumeric(ligne)):
+                if(str.isnumeric(ligne)):
                     sommets.append(ligne)
-                    print("sommets", sommets)
-            elif(checkpoint == "Aretes"):
-                pass
+                    
+            #on a passé "Aretes" mais on n'ajoute pas sa ligne
+            elif(checkpoint == "Aretes" and ligne !="Aretes"):
+                sommet1, sommet2 = ligne.split() #les s1 et s2 composent l'arete
+                aretes.append((int(sommet1), int(sommet2))) #liste string devient couple d'int
+                    
             ligne = f.readline()
+
+        #creation du graphe à retourner
+        graphe = nx.Graph()
+        graphe.add_nodes_from(sommets)
+        graphe.add_edges_from(aretes)
+        return graphe
+    
     finally:
         f.close()
-    
-importGrapheFromTxt("exempleinstance.txt")
-    
-graphe = nx.Graph()
-graphe.add_nodes_from([i for i in range (0,4)])
-graphe.add_edges_from([(0,1), (3,2)])
-#nx.draw(graphe, with_labels=True)
+
+def dessine(G):
+    """
+    dessine le graphe G
+    """
+    nx.draw(G, with_labels=True)
+
+#2.1.1
+def graphePartiel(G, v):
+    """
+    retourne un graphe graphe G2 obtenu à partir de G en supprimant le sommet v
+    """
+    G2 = nx.Graph(G)
+    G2.remove_node(v)
+    return  G2
+
+graphe = importGrapheFromTxt("exempleinstance.txt")
+
+graphe2 = graphePartiel(graphe, 0)
+dessine(graphe2)
