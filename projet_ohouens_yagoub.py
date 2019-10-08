@@ -1,11 +1,11 @@
 """
 Created on Mon Oct  7 11:25:22 2019
 
-@author: 3521571, 3670015
+@author: Bassem Yagoub (3521571), Ryan Ohouens (3670015)
 """
 
 import networkx as nx
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 """import numpy as np
 class Graphe():
@@ -43,7 +43,7 @@ def importGrapheFromTxt(file):
                 
             if(checkpoint == "Sommets"):
                 if(str.isnumeric(ligne)):
-                    sommets.append(ligne)
+                    sommets.append(int(ligne))
                     
             #on a passé "Aretes" mais on n'ajoute pas sa ligne
             elif(checkpoint == "Aretes" and ligne !="Aretes"):
@@ -67,16 +67,50 @@ def dessine(G):
     """
     nx.draw(G, with_labels=True)
 
-#2.1.1
-def graphePartiel(G, v):
+#2.1.1, 2.1.2
+def sousGraphe(G, v):
     """
-    retourne un graphe graphe G2 obtenu à partir de G en supprimant le sommet v
+    params:
+        G: nx.Graph(), le graphe initial
+        v: le(s) sommet(s) à retirer de G
+    
+    return : un graphe graphe G2 obtenu à partir de G en supprimant le(s) sommet(s) v (ou de v)
     """
     G2 = nx.Graph(G)
-    G2.remove_node(v)
+    if(isinstance(v, int)):
+        G2.remove_node(v)
+    elif(isinstance(v, list)):
+        G2.remove_nodes_from(v)
     return  G2
+
+#2.1.3
+def degresSommets(G):
+    """
+    params:
+        G: nx.Graph(), le graphe à analyser
+    return : liste de degrés de chaque sommet de G
+    """
+    noeuds_degs = G.degree
+    return [noeuds_degs[i] for i in range(len(noeuds_degs))]
+
+def degreMax(G):
+    """
+    params:
+        G: nx.Graph(), le graphe à analyser
+    return : indice du sommet de degré max de G
+    """
+    sommets = degresSommets(G)
+    return sommets.index(max(sommets))
+
+
+
+#----------------------------------------------------------
+#---------------------------MAIN---------------------------
+#----------------------------------------------------------
 
 graphe = importGrapheFromTxt("exempleinstance.txt")
 
-graphe2 = graphePartiel(graphe, 0)
-dessine(graphe2)
+graphe2 = sousGraphe(graphe, [0,1,2,8])
+graphe.add_edges_from([(1, 3), (1, 2)])
+dessine(graphe)
+print(degreMax(graphe))
