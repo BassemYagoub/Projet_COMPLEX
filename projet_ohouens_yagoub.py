@@ -14,14 +14,14 @@ class Graphe():
         self.nbS = nbSommets;
         self.nbA = nbArretes;
         self.listeAdj = np.array()
-        
+
     def estimClass(self, attrs):
         return 1.0
 """
 
-def importGrapheFromTxt(file):
+def importGrapheFromTxt(file, show=False):
     """
-    params : 
+    params :
         file (string) : nom du fichier texte
     return : nx.Graph() (graphe) avec les sommets et arêtes lus dans le fichier.
     """
@@ -31,33 +31,35 @@ def importGrapheFromTxt(file):
         aretes  = [] #liste des couples (sommet, sommet) (arêtes)
         ligne = f.readline()
         checkpoint = "Sommets" #checkpoint initial
-        
+
         while(ligne):
             ligne = ligne.replace("\n", "")
             ligne = ligne.replace("\t", "")
             if(checkpoint != "Aretes"):
                 ligne = ligne.replace(" ", "")
-                
+
             if(not str.isnumeric(ligne) and checkpoint != "Aretes"):
                 checkpoint = ligne
-                
+
             if(checkpoint == "Sommets"):
                 if(str.isnumeric(ligne)):
                     sommets.append(int(ligne))
-                    
+
             #on a passé "Aretes" mais on n'ajoute pas sa ligne
             elif(checkpoint == "Aretes" and ligne !="Aretes"):
                 sommet1, sommet2 = ligne.split() #les s1 et s2 composent l'arete
                 aretes.append((int(sommet1), int(sommet2))) #liste string devient couple d'int
-                    
+
             ligne = f.readline()
 
         #creation du graphe à retourner
         graphe = nx.Graph()
         graphe.add_nodes_from(sommets)
         graphe.add_edges_from(aretes)
+        if(show):
+            dessine(graphe)
         return graphe
-    
+
     finally:
         f.close()
 
@@ -69,19 +71,23 @@ def dessine(G):
     plt.show()
 
 #2.1.1, 2.1.2
-def sousGraphe(G, v):
+def sousGraphe(G, v, show=False):
     """
     params:
         G: nx.Graph(), le graphe initial
         v: le(s) sommet(s) à retirer de G
-    
+
     return : un graphe graphe G2 obtenu à partir de G en supprimant le(s) sommet(s) v (ou de v)
     """
     G2 = nx.Graph(G)
     if(isinstance(v, int)):
         G2.remove_node(v)
-    elif(isinstance(v, list)):
+        if(show):
+            dessine(G2)
+    if(isinstance(v, list)):
         G2.remove_nodes_from(v)
+    if(show):
+        dessine(G2)
     return  G2
 
 #2.1.3
@@ -104,7 +110,7 @@ def degreMax(G):
     return sommets.index(max(sommets))
 
 #2.2
-def creerInstance(n, p):
+def creerInstance(n, p, show=False):
     """
     params:
         n: int>0, nombre de sommets
@@ -115,24 +121,28 @@ def creerInstance(n, p):
     """
     if(n < 0 or (p < 0.0 or p > 1.0)):
         raise Exception("n < 0 ou bien p n'est pas une probabilité")
-        
+
     graphe = nx.Graph()
     graphe.add_nodes_from([i for i in range(n)]) #on a le graphe avec n noeuds
-    
+
     if(n == 1):
+        if(show):
+            dessine(graphe)
         return graphe
-    
+
     for i in range(n-1):
         for j in range(i+1, n): #début=i+1 pour ne pas etre redondant
             areteOk = np.random.binomial(1, p)
             if(areteOk == 1):
                 graphe.add_edge(i,j)
+    if(show):
+        dessine(graphe)
     return graphe
 
 #3.2
 def algo_couplage(G):
     """
-    params: 
+    params:
         G: nx.Graph()
     return: Une couverture de G
     """
@@ -147,7 +157,7 @@ def algo_couplage(G):
 def algo_glouton(G):
     """
     Version glouton de algo_couplage
-    params: 
+    params:
         G: nx.Graph()
     return: Une couverture de G
     """
@@ -162,7 +172,7 @@ def algo_glouton(G):
         aretes_suppr = [arete for arete in E if( (arete[0]==v) or (arete[1]==v) )] #liste d'aretes de v à supprimer
         """
         print("suppr", aretes_suppr)
-        
+
         i=0
         while(aretes_suppr[i][0] in aretes_couvs or aretes_suppr[i][1] in aretes_couvs):
             i+=1
@@ -184,23 +194,23 @@ def compare_couvs(n_min, n_max, p, dessin=False):
         dessin: boolean, affiche le graphe ou non
     return: (algo_couplage(graphe), algo_glouton(graphe))
     """
-    
+
     temps_couplages = []
     temps_gloutons  = []
     nb_sommets_iteres = []
-    
+
     for n in range(n_min, n_max, int(n_max/20)):
         graphe = creerInstance(n, p)
         if(dessin == True):
             dessine(graphe)
-        
+
         #couplage
         start = time.time()
         couplage = algo_couplage(graphe)
         t_couplage_i = time.time() - start
         temps_couplages.append(t_couplage_i)
         #print("couplage : \n", couplage, "\nDurée Exec :", (end - start))
-        
+
         #glouton
         start = time.time()
         glouton = algo_glouton(graphe)
@@ -208,7 +218,7 @@ def compare_couvs(n_min, n_max, p, dessin=False):
         temps_gloutons.append(t_glouton_i)
         #print("\nglouton : \n", glouton, "\nDurée Exec : ", (end - start))
         nb_sommets_iteres.append(n)
-    
+
     """ plot de courbes """
     plt.plot(nb_sommets_iteres, temps_couplages, 'r', label="Algo Couplage")
     plt.plot(nb_sommets_iteres, temps_gloutons, 'b', label="Algo Glouton")
@@ -216,25 +226,22 @@ def compare_couvs(n_min, n_max, p, dessin=False):
     plt.ylabel('Temps (en s)')
     plt.xlabel('Nombre de sommets (n)')
     plt.show()
-    
+
     return couplage, glouton
 
 
 #4.1
-def branchbound(G, c=[]):
+def branchbound(G, c=[], showSteps=False):
     if(len(G.edges) == 0):
         return c
-    
     u, v = [arete for arete in G.edges][0]
-    #print(u,v)
-    #dessine(G)
-    g_u = branchbound(sousGraphe(G, u), c+[u])
-    g_v = branchbound(sousGraphe(G, v), c+[v])
+    g_u = branchbound(sousGraphe(G, u, showSteps), c+[u])
+    g_v = branchbound(sousGraphe(G, v, showSteps), c+[v])
     if(len(g_u) > len(g_v)):
         return g_v
     else:
         return g_u
-    
+
 
 #----------------------------------------------------------
 #---------------------------MAIN---------------------------
@@ -243,8 +250,7 @@ def branchbound(G, c=[]):
 
 #n = 50, p=0.5
 #graphe = importGrapheFromTxt("exempleinstance.txt")
-graphe = creerInstance(10, 0.5)
+graphe = creerInstance(5, 0.5, True)
 #compare_couvs(10, 500, 0.5)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
-#dessine(graphe)
-print(branchbound(graphe))
+print(branchbound(graphe, [], True))
