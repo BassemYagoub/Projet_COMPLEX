@@ -7,6 +7,7 @@ import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import math
 
 """import numpy as np
 class Graphe():
@@ -202,7 +203,19 @@ def compare_couvs(n_min, n_max, p, dessin=False):
     for n in range(n_min, n_max, int(n_max/20)):
         graphe = creerInstance(n, p)
         if(dessin == True):
-            dessine(graphe)
+            dessine(graphe)ure
+-----------------
+C = emptyset
+Pour i de 1 `a m:
+Si aucune des deux extr´emit´es de e_i n’est dans C, alors:
+Ajouter les deux extr´emit´es de e_i `a C
+Fin Si
+Fin Pour
+Renvoyer C
+Algorithme glouton
+algo_glouton(G)
+-----------------
+Entr´ee: G=(V,E=(e_1
 
         #couplage
         start = time.time()
@@ -235,8 +248,8 @@ def branchbound(G, c=[], showSteps=False):
     if(len(G.edges) == 0):
         return c
     u, v = [arete for arete in G.edges][0]
-    g_u = branchbound(sousGraphe(G, u, showSteps), c+[u])
-    g_v = branchbound(sousGraphe(G, v, showSteps), c+[v])
+    g_u = branchbound(sousGraphe(G, u, showSteps), c+[u], showSteps)
+    g_v = branchbound(sousGraphe(G, v, showSteps), c+[v], showSteps)
     if(len(g_u) > len(g_v)):
         return g_v
     else:
@@ -247,10 +260,18 @@ def branchbound(G, c=[], showSteps=False):
 #---------------------------MAIN---------------------------
 #----------------------------------------------------------
 
+"""
+|C| = 3  ( [0,1,3] )
+b1 = 6/3 = 2
+b2 = 2
+b3 = ( (2*5)-1-math.sqrt( ((2*5)-1)**2-8*6) )/2 = 1.63
+len(algo_couplage)/2
+"""
 
 #n = 50, p=0.5
-#graphe = importGrapheFromTxt("exempleinstance.txt")
-graphe = creerInstance(5, 0.5, True)
+graphe = importGrapheFromTxt("exempleinstance2.txt", True)
+#graphe = creerInstance(5, 1, True)
 #compare_couvs(10, 500, 0.5)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
-print(branchbound(graphe, [], True))
+print(branchbound(graphe, [], False))
+print(( (2*5)-1-math.sqrt( ((2*5)-1)**2-8*6) )/2)
