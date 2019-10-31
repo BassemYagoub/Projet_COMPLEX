@@ -203,19 +203,7 @@ def compare_couvs(n_min, n_max, p, dessin=False):
     for n in range(n_min, n_max, int(n_max/20)):
         graphe = creerInstance(n, p)
         if(dessin == True):
-            dessine(graphe)ure
------------------
-C = emptyset
-Pour i de 1 `a m:
-Si aucune des deux extr´emit´es de e_i n’est dans C, alors:
-Ajouter les deux extr´emit´es de e_i `a C
-Fin Si
-Fin Pour
-Renvoyer C
-Algorithme glouton
-algo_glouton(G)
------------------
-Entr´ee: G=(V,E=(e_1
+            dessine(graphe)
 
         #couplage
         start = time.time()
@@ -274,4 +262,3 @@ graphe = importGrapheFromTxt("exempleinstance2.txt", True)
 #compare_couvs(10, 500, 0.5)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
 print(branchbound(graphe, [], False))
-print(( (2*5)-1-math.sqrt( ((2*5)-1)**2-8*6) )/2)
