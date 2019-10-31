@@ -232,12 +232,35 @@ def compare_couvs(n_min, n_max, p, dessin=False):
 
 
 #4.1
-def branchbound(G, c=[], showSteps=False):
+total = 0
+def branchbound(G, c=[], coupe=False, showSteps=False):
+    global total
+    total += 1
+    print("total des noeuds parcourues", total)
     if(len(G.edges) == 0):
         return c
     u, v = [arete for arete in G.edges][0]
-    g_u = branchbound(sousGraphe(G, u, showSteps), c+[u], showSteps)
-    g_v = branchbound(sousGraphe(G, v, showSteps), c+[v], showSteps)
+    if(coupe):
+        n = len(G)
+        m = G.number_of_edges()
+        delta = 1
+        for noeud, deg in G.degree:
+            if deg > delta:
+                delta = deg
+        b1 = m/delta
+        b2 = len(algo_couplage(G))
+        b3 = (2*n-1-math.sqrt((2*n-1)**2-8*m))/2
+        print("n", n)
+        print("m", m)
+        print("delta", delta)
+        print("b1", b1)
+        print("b2", b2)
+        print("b3", b3)
+        print("c", c)
+        if(len(c) > max(b1, b2, b3)):
+            return c
+    g_u = branchbound(sousGraphe(G, u, showSteps), c+[u], coupe, showSteps)
+    g_v = branchbound(sousGraphe(G, v, showSteps), c+[v], coupe, showSteps)
     if(len(g_u) > len(g_v)):
         return g_v
     else:
@@ -258,7 +281,7 @@ len(algo_couplage)/2
 
 #n = 50, p=0.5
 graphe = importGrapheFromTxt("exempleinstance2.txt", True)
-#graphe = creerInstance(5, 1, True)
+# graphe = creerInstance(4, 1, True)
 #compare_couvs(10, 500, 0.5)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
-print(branchbound(graphe, [], False))
+print(branchbound(graphe, [], True))
