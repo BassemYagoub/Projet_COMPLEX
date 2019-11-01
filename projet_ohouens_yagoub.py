@@ -238,6 +238,13 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False):
     total += 1
     if(showSteps):
         print("total des noeuds parcourues", total)
+
+    if(len(G.edges) == 0):
+        if(showSteps):
+            print("-----feuille atteinte-----")
+            dessine(G)
+        return c
+
     if(avecCoupe):
         n = len(G)
         m = G.number_of_edges()
@@ -245,28 +252,23 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False):
         for noeud, deg in G.degree:
             if deg > delta:
                 delta = deg
-        b1 = m/delta
-        b2 = len(algo_couplage(G))
-        b3 = (2*n-1-math.sqrt((2*n-1)**2-8*m))/2
-        if(showSteps):
-            print("n", n)
-            print("m", m)
-            print("delta", delta)
-            print("b1", b1)
-            print("b2", b2)
-            print("b3", b3)
-            print("c", c)
-        if(len(c) > max(b1, b2, b3)):
-            if(showSteps):
-                print("-----Elagage!-----")
-                dessine(G)
-            return c
+                b1 = m/delta
+                b2 = len(algo_couplage(G))
+                b3 = (2*n-1-math.sqrt((2*n-1)**2-8*m))/2
+                if(showSteps):
+                    print("n", n)
+                    print("m", m)
+                    print("delta", delta)
+                    print("b1", b1)
+                    print("b2", b2)
+                    print("b3", b3)
+                    print("c", c)
+                    if(len(c) > max(b1, b2, b3)):
+                        if(showSteps):
+                            print("-----Elagage!-----")
+                            dessine(G)
+                            return c
 
-    if(len(G.edges) == 0):
-        if(showSteps):
-            print("-----feuille atteinte-----")
-            dessine(G)
-        return c
     u, v = [arete for arete in G.edges][0]
     if(showSteps):
         print("-------DESCENTE GAUCHE--------")
@@ -295,8 +297,8 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False):
 #---------------------------MAIN---------------------------
 #----------------------------------------------------------
 
-graphe = importGrapheFromTxt("exempleinstance2.txt", True)
+graphe = importGrapheFromTxt("exempleinstance2.txt")
 # graphe = creerInstance(4, 1, True)
 #compare_couvs(10, 500, 0.5)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
-print(branchbound(graphe, [], True, True))
+print(branchbound(graphe, [], False, True))
