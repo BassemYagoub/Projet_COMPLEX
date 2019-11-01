@@ -245,6 +245,14 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False):
             dessine(G)
         return c
 
+    u, v = [arete for arete in G.edges][0]
+    if(showSteps):
+        print("-------DESCENTE GAUCHE--------")
+        dessine(G)
+    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps)
+    if(showSteps):
+        print("-------REMONTEE GAUCHE--------\n\n")
+
     if(avecCoupe):
         n = len(G)
         m = G.number_of_edges()
@@ -269,20 +277,16 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False):
             if(showSteps):
                 print("-----Elagage!-----")
                 dessine(G)
-                return c
+                return g_u
 
-    u, v = [arete for arete in G.edges][0]
     if(showSteps):
-        print("-------DESCENTE GAUCHE--------")
-        dessine(G)
-    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps)
-    if(showSteps):
-        print("-------REMONTEE GAUCHE--------\n\n")
         print("-------DESCENTE DROITE--------")
         dessine(G)
     g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps)
     if(showSteps):
         print("-------REMONTEE DROITE--------\n\n")
+
+
     if(len(g_u) > len(g_v)):
         if(showSteps):
             print("-----branche droite choisie-----")
