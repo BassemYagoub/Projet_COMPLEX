@@ -233,14 +233,12 @@ def compare_couvs(n_min, n_max, p, dessin=False):
 
 #4.1
 total = 0
-def branchbound(G, c=[], coupe=False, showSteps=False):
+def branchbound(G, c=[], avecCoupe=False, showSteps=False):
     global total
     total += 1
-    print("total des noeuds parcourues", total)
-    if(len(G.edges) == 0):
-        return c
-    u, v = [arete for arete in G.edges][0]
-    if(coupe):
+    if(showSteps):
+        print("total des noeuds parcourues", total)
+    if(avecCoupe):
         n = len(G)
         m = G.number_of_edges()
         delta = 1
@@ -250,20 +248,46 @@ def branchbound(G, c=[], coupe=False, showSteps=False):
         b1 = m/delta
         b2 = len(algo_couplage(G))
         b3 = (2*n-1-math.sqrt((2*n-1)**2-8*m))/2
-        print("n", n)
-        print("m", m)
-        print("delta", delta)
-        print("b1", b1)
-        print("b2", b2)
-        print("b3", b3)
-        print("c", c)
+        if(showSteps):
+            print("n", n)
+            print("m", m)
+            print("delta", delta)
+            print("b1", b1)
+            print("b2", b2)
+            print("b3", b3)
+            print("c", c)
         if(len(c) > max(b1, b2, b3)):
+            if(showSteps):
+                print("-----Elagage!-----")
+                dessine(G)
             return c
-    g_u = branchbound(sousGraphe(G, u, showSteps), c+[u], coupe, showSteps)
-    g_v = branchbound(sousGraphe(G, v, showSteps), c+[v], coupe, showSteps)
+
+    if(len(G.edges) == 0):
+        if(showSteps):
+            print("-----feuille atteinte-----")
+            dessine(G)
+        return c
+    u, v = [arete for arete in G.edges][0]
+    if(showSteps):
+        print("-------DESCENTE GAUCHE--------")
+        dessine(G)
+    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps)
+    if(showSteps):
+        print("-------REMONTEE GAUCHE--------\n\n")
+        print("-------DESCENTE DROITE--------")
+        dessine(G)
+    g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps)
+    if(showSteps):
+        print("-------REMONTEE DROITE--------\n\n")
     if(len(g_u) > len(g_v)):
+        if(showSteps):
+            print("-----branche droite choisie-----")
+            dessine(G)
         return g_v
     else:
+        if(showSteps):
+            print("-----branche gauche choisie-----")
+            dessine(G)
         return g_u
 
 
@@ -271,17 +295,8 @@ def branchbound(G, c=[], coupe=False, showSteps=False):
 #---------------------------MAIN---------------------------
 #----------------------------------------------------------
 
-"""
-|C| = 3  ( [0,1,3] )
-b1 = 6/3 = 2
-b2 = 2
-b3 = ( (2*5)-1-math.sqrt( ((2*5)-1)**2-8*6) )/2 = 1.63
-len(algo_couplage)/2
-"""
-
-#n = 50, p=0.5
 graphe = importGrapheFromTxt("exempleinstance2.txt", True)
 # graphe = creerInstance(4, 1, True)
 #compare_couvs(10, 500, 0.5)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
-print(branchbound(graphe, [], True))
+print(branchbound(graphe, [], True, True))
