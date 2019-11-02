@@ -185,7 +185,7 @@ def algo_glouton(G):
         #plt.show()
     return c
 
-def compare_couvs(n_min, n_max, p, dessin=False):
+def compare_couvs(n_min, n_max, nb_ites=20, nb_moys=5, dessin=False):
     """
     Compare les durées d'exéc de algo_couplage et algo_glouton en fonction de n, p via les courbes (n en fonction du temps)
     params:
@@ -196,37 +196,60 @@ def compare_couvs(n_min, n_max, p, dessin=False):
     return: (algo_couplage(graphe), algo_glouton(graphe))
     """
 
-    temps_couplages = []
-    temps_gloutons  = []
-    nb_sommets_iteres = []
+    #pour chaque p
+    for p in np.arange(0.25, 1.01, 0.25): #1.01 permet que le graphe à p=1 soit effectué
+        nb_sommets_iteres = []
 
-    for n in range(n_min, n_max, int(n_max/20)):
-        graphe = creerInstance(n, p)
-        if(dessin == True):
-            dessine(graphe)
+        temps_couplages = []
+        card_moy_sols_couplage = 0
 
-        #couplage
-        start = time.time()
-        couplage = algo_couplage(graphe)
-        t_couplage_i = time.time() - start
-        temps_couplages.append(t_couplage_i)
-        #print("couplage : \n", couplage, "\nDurée Exec :", (end - start))
+        temps_gloutons  = []
+        card_moy_sols_glouton = 0
 
-        #glouton
-        start = time.time()
-        glouton = algo_glouton(graphe)
-        t_glouton_i = time.time() - start
-        temps_gloutons.append(t_glouton_i)
-        #print("\nglouton : \n", glouton, "\nDurée Exec : ", (end - start))
-        nb_sommets_iteres.append(n)
+        #pour chaque n
+        for n in range(n_min, n_max, int(n_max/nb_ites)):
+            t_couplage_i, t_glouton_i = 0, 0 #sommes des temps pour chaque algo, pour chaque n
+            card_moy_couplage_i, card_moy_glouton_i = 0, 0
 
-    """ plot de courbes """
-    plt.plot(nb_sommets_iteres, temps_couplages, 'r', label="Algo Couplage")
-    plt.plot(nb_sommets_iteres, temps_gloutons, 'b', label="Algo Glouton")
-    plt.legend(loc='best')
-    plt.ylabel('Temps (en s)')
-    plt.xlabel('Nombre de sommets (n)')
-    plt.show()
+            #permet d'avoir une moyenne via differents graphes pour un même n
+            for i in range(nb_moys):
+                graphe = creerInstance(n, p)
+                if(dessin == True):
+                    dessine(graphe)
+
+                #couplage
+                start = time.time()
+                couplage = algo_couplage(graphe)
+                t_couplage_i += time.time() - start
+                card_moy_couplage_i += len(couplage)
+                #print("couplage : \n", couplage, "\nDurée Exec :", (end - start))
+
+                #glouton
+                start = time.time()
+                glouton = algo_glouton(graphe)
+                t_glouton_i += time.time() - start
+                card_moy_glouton_i += len(glouton)
+                #print("\nglouton : \n", glouton, "\nDurée Exec : ", (end - start))
+
+            #on divise la somme des temps par nb_repets pour avoir une moyenne pour chaque n
+            temps_couplages.append(t_couplage_i/nb_moys)
+            temps_gloutons.append(t_glouton_i/nb_moys)
+
+            card_moy_sols_couplage += card_moy_couplage_i/nb_moys
+            card_moy_sols_glouton += card_moy_glouton_i/nb_moys
+
+            nb_sommets_iteres.append(n)
+
+        """ plot de courbes """
+        plt.title("Durée des algos en fonction du nombre de sommets avec p={:.2f}".format(p))
+        plt.plot(nb_sommets_iteres, temps_couplages, 'r', label="Algo Couplage")
+        plt.plot(nb_sommets_iteres, temps_gloutons, 'b', label="Algo Glouton")
+        plt.legend(loc='best')
+        plt.ylabel('Temps (en s)')
+        plt.xlabel('Nombre de sommets (n)')
+        plt.show()
+        print("cardinalité moyenne de la couverture via couplage : ", card_moy_sols_couplage/nb_ites, "\n")
+        print("cardinalité moyenne de la couverture via glouton : ", card_moy_sols_glouton/nb_ites, "\n")
 
     return couplage, glouton
 
@@ -271,7 +294,7 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, borne=-1):
         borneInf = bound(G, c, showSteps)
         if(showSteps):
             print("---borne---", borne)
-        if(len(c) > borne and borne >= 0):
+        if(len(c) >= borne+1 and borne >= 0):
             if(showSteps):
                 print("-----Elagage!-----")
                 dessine(G)
@@ -309,8 +332,9 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, borne=-1):
 #----------------------------------------------------------
 
 # graphe = importGrapheFromTxt("exempleinstance2.txt")
-graphe = creerInstance(6, 0.8, False)
-#compare_couvs(10, 500, 0.5)
+nbV = 4
+graphe = creerInstance(nbV, 0.7, False)
+# compare_couvs(10, 200)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
 print("b&b sans borne inferieur donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
 total = 0
