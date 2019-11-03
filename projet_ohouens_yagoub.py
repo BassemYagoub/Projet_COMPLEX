@@ -83,8 +83,6 @@ def sousGraphe(G, v, show=False):
     G2 = nx.Graph(G)
     if(isinstance(v, int)):
         G2.remove_node(v)
-        if(show):
-            dessine(G2)
     if(isinstance(v, list)):
         G2.remove_nodes_from(v)
     if(show):
@@ -253,6 +251,10 @@ def compare_couvs(n_min, n_max, nb_ites=20, nb_moys=5, dessin=False):
 
     return couplage, glouton
 
+
+#---------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------4.1 & 4.2------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------
 def bound(G, c, showSteps=False):
     n = len(G)
     m = G.number_of_edges()
@@ -275,9 +277,23 @@ def bound(G, c, showSteps=False):
         print("c", c)
     return  b
 
-#4.1
+def amelioration(G, u, v, showSteps=False):
+    voisins = []
+    if(showSteps):
+        print("u", u)
+        print("v", v)
+    for arete in G.edges:
+        if(u in arete and v not in arete):
+            if(u == arete[0]):
+                voisins.append(arete[1])
+            else:
+                voisins.append(arete[2])
+    if(showSteps):
+        print("voisins de u", voisins)
+    return sousGraphe(G, u, showSteps), voisins
+
 total = 0
-def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[]):
+def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], optmized=False):
     global total
     total += 1
     if(showSteps):
@@ -303,12 +319,16 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[]):
     if(showSteps):
         print("-------DESCENTE GAUCHE--------")
         dessine(G)
-    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps, epsilon, coupe)
+    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps, epsilon, coupe, optmized)
     if(showSteps):
         print("-------REMONTEE GAUCHE--------\n\n")
         print("-------DESCENTE DROITE--------")
         dessine(G)
-    g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps, epsilon, coupe)
+    if(not optmized):
+        g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps, epsilon, coupe, optmized)
+    else:
+        GSu, cSu = amelioration(G, u, v, showSteps)
+        g_v = branchbound(sousGraphe(GSu, v), c+cSu+[v], avecCoupe, showSteps, epsilon, coupe, optmized)
     if(showSteps):
         print("-------REMONTEE DROITE--------\n\n")
         print("::::Choix entre", g_u, "et", g_v, "::::")
@@ -324,19 +344,21 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[]):
             print(g_u)
             dessine(G)
         return g_u
-
-
-#----------------------------------------------------------
-#---------------------------MAIN---------------------------
-#----------------------------------------------------------
-
+#----------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------MAIN------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------
 # graphe = importGrapheFromTxt("exempleinstance2.txt")
-nbV = 15
-E = 11
+nbV = 5
+E = 2
 beta = [1 for k in range(nbV+1)]
-graphe = creerInstance(nbV, 0.7, False)
+p = 1/math.sqrt(nbV)
+if(nbV < 7):
+    p = 0.7
+graphe = creerInstance(nbV, p, False)
 # compare_couvs(10, 200)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
 print("b&b sans borne inferieur donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
 total = 0
-print("b&b avec borne inferieur donne le resultat", branchbound(graphe, [], True, False, E, beta), "avec un total de noeuds parcourues de", total)
+# print("b&b avec borne inferieur donne le resultat", branchbound(graphe, [], True, False, E, beta), "avec un total de noeuds parcourues de", total)
+total = 0
+print("b&b sans borne inferieur avec optimisation donne le resultat", branchbound(graphe, [], False, True, E, beta, True), "avec un total de noeuds parcourues de", total)
