@@ -277,7 +277,7 @@ def bound(G, c, showSteps=False):
 
 #4.1
 total = 0
-def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0):
+def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[]):
     global total
     total += 1
     if(showSteps):
@@ -297,18 +297,18 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0):
             if(showSteps):
                 print("-----Elagage!-----")
                 dessine(G)
-            return [1 for k in range(40)]
+            return coupe
 
     u, v = [arete for arete in G.edges][0]
     if(showSteps):
         print("-------DESCENTE GAUCHE--------")
         dessine(G)
-    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps, epsilon)
+    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps, epsilon, coupe)
     if(showSteps):
         print("-------REMONTEE GAUCHE--------\n\n")
         print("-------DESCENTE DROITE--------")
         dessine(G)
-    g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps, epsilon)
+    g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps, epsilon, coupe)
     if(showSteps):
         print("-------REMONTEE DROITE--------\n\n")
         print("::::Choix entre", g_u, "et", g_v, "::::")
@@ -331,11 +331,12 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0):
 #----------------------------------------------------------
 
 # graphe = importGrapheFromTxt("exempleinstance2.txt")
-nbV = 7
-E = 4
+nbV = 15
+E = 11
+beta = [1 for k in range(nbV+1)]
 graphe = creerInstance(nbV, 0.7, False)
 # compare_couvs(10, 200)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
 print("b&b sans borne inferieur donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
 total = 0
-print("b&b avec borne inferieur donne le resultat", branchbound(graphe, [], True, epsilon=E), "avec un total de noeuds parcourues de", total)
+print("b&b avec borne inferieur donne le resultat", branchbound(graphe, [], True, False, E, beta), "avec un total de noeuds parcourues de", total)
