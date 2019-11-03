@@ -252,9 +252,9 @@ def compare_couvs(n_min, n_max, nb_ites=20, nb_moys=5, dessin=False):
     return couplage, glouton
 
 
-#---------------------------------------------------------------------------------------------------------------------
-#------------------------------------------------------4.1 & 4.2------------------------------------------------------
-#---------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------4.1 & 4.2 & 4.3------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------
 def bound(G, c, showSteps=False):
     n = len(G)
     m = G.number_of_edges()
@@ -287,13 +287,28 @@ def amelioration(G, u, v, showSteps=False):
             if(u == arete[0]):
                 voisins.append(arete[1])
             else:
-                voisins.append(arete[2])
+                voisins.append(arete[0])
     if(showSteps):
         print("voisins de u", voisins)
     return sousGraphe(G, voisins, showSteps), voisins
 
+def edgeMax(G, showSteps=False):
+    delta = -1
+    u = -1
+    for noeud, deg in G.degree:
+        if deg > delta:
+            delta = deg
+            u = noeud
+    if(showSteps):
+        print("uMax", u)
+    for arete in G.edges:
+        if(arete[0] == u):
+            if(showSteps):
+                print("edgeMax", arete)
+            return arete
+
 total = 0
-def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], optmized=False):
+def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], optmized=False, uMax=False):
     global total
     total += 1
     if(showSteps):
@@ -315,20 +330,24 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], 
                 dessine(G)
             return coupe
 
-    u, v = [arete for arete in G.edges][0]
+    if(not uMax):
+        u, v = [arete for arete in G.edges][0]
+    else:
+        u, v = edgeMax(G, showSteps)
+
     if(showSteps):
         print("-------DESCENTE GAUCHE--------")
         dessine(G)
-    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps, epsilon, coupe, optmized)
+    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps, epsilon, coupe, optmized, uMax)
     if(showSteps):
         print("-------REMONTEE GAUCHE--------\n\n")
         print("-------DESCENTE DROITE--------")
         dessine(G)
     if(not optmized):
-        g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps, epsilon, coupe, optmized)
+        g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps, epsilon, coupe, optmized, uMax)
     else:
         GSu, cSu = amelioration(G, u, v, showSteps)
-        g_v = branchbound(sousGraphe(GSu, v), c+cSu+[v], avecCoupe, showSteps, epsilon, coupe, optmized)
+        g_v = branchbound(sousGraphe(GSu, v), c+cSu+[v], avecCoupe, showSteps, epsilon, coupe, optmized, uMax)
     if(showSteps):
         print("-------REMONTEE DROITE--------\n\n")
         print("::::Choix entre", g_u, "et", g_v, "::::")
@@ -347,18 +366,20 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], 
 #----------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------MAIN------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
-# graphe = importGrapheFromTxt("exempleinstance2.txt")
 nbV = 5
 E = 2
 beta = [1 for k in range(nbV+1)]
-p = 1/math.sqrt(nbV)
-if(nbV < 7):
-    p = 0.7
-graphe = creerInstance(nbV, p, True)
+# p = 1/math.sqrt(nbV)
+# if(nbV < 7):
+#     p = 0.7
+# graphe = creerInstance(nbV, p, True)
 # compare_couvs(10, 200)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
+graphe = importGrapheFromTxt("exempleinstance2.txt", True)
 print("b&b sans borne inferieur sans optimisation donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
 total = 0
 print("b&b avec borne inferieur sans optimisation donne le resultat", branchbound(graphe, [], True, False, E, beta), "avec un total de noeuds parcourues de", total)
 total = 0
 print("b&b sans borne inferieur avec optimisation donne le resultat", branchbound(graphe, [], False, False, E, beta, True), "avec un total de noeuds parcourues de", total)
+total = 0
+print("b&b sans borne inferieur avec super optimisation donne le resultat", branchbound(graphe, [], False, False, E, beta, True, True), "avec un total de noeuds parcourues de", total)
