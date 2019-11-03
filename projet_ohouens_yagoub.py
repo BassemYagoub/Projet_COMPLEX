@@ -301,12 +301,17 @@ def edgeMax(G, showSteps=False):
             u = noeud
     if(showSteps):
         print("uMax", u)
+    buff = 0,0
     for arete in G.edges:
         if(arete[0] == u):
             if(showSteps):
                 print("edgeMax", arete)
             return arete
-
+        if(u in arete):
+            buff = arete[1], arete[0]
+    if(showSteps):
+        print("edgeMax", arete)
+    return buff
 total = 0
 def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], optmized=False, uMax=False):
     global total
@@ -366,16 +371,16 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], 
 #----------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------MAIN------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
-nbV = 5
-E = 2
+nbV = 15
+E = 8
 beta = [1 for k in range(nbV+1)]
-# p = 1/math.sqrt(nbV)
-# if(nbV < 7):
-#     p = 0.7
-# graphe = creerInstance(nbV, p, True)
+p = 1/math.sqrt(nbV)
+if(nbV < 7):
+    p = 0.7
+graphe = creerInstance(nbV, p, True)
 # compare_couvs(10, 200)
-#graphe = importGrapheFromTxt("exemple_branchbound.txt")
-graphe = importGrapheFromTxt("exempleinstance2.txt", True)
+# graphe = importGrapheFromTxt("exemple_branchbound.txt")
+# graphe = importGrapheFromTxt("exempleinstance2.txt", True)
 print("b&b sans borne inferieur sans optimisation donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
 total = 0
 print("b&b avec borne inferieur sans optimisation donne le resultat", branchbound(graphe, [], True, False, E, beta), "avec un total de noeuds parcourues de", total)
