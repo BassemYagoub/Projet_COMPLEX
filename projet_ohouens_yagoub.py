@@ -290,7 +290,7 @@ def amelioration(G, u, v, showSteps=False):
                 voisins.append(arete[2])
     if(showSteps):
         print("voisins de u", voisins)
-    return sousGraphe(G, u, showSteps), voisins
+    return sousGraphe(G, voisins, showSteps), voisins
 
 total = 0
 def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], optmized=False):
@@ -354,11 +354,11 @@ beta = [1 for k in range(nbV+1)]
 p = 1/math.sqrt(nbV)
 if(nbV < 7):
     p = 0.7
-graphe = creerInstance(nbV, p, False)
+graphe = creerInstance(nbV, p, True)
 # compare_couvs(10, 200)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
-print("b&b sans borne inferieur donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
+print("b&b sans borne inferieur sans optimisation donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
 total = 0
-# print("b&b avec borne inferieur donne le resultat", branchbound(graphe, [], True, False, E, beta), "avec un total de noeuds parcourues de", total)
+print("b&b avec borne inferieur sans optimisation donne le resultat", branchbound(graphe, [], True, False, E, beta), "avec un total de noeuds parcourues de", total)
 total = 0
-print("b&b sans borne inferieur avec optimisation donne le resultat", branchbound(graphe, [], False, True, E, beta, True), "avec un total de noeuds parcourues de", total)
+print("b&b sans borne inferieur avec optimisation donne le resultat", branchbound(graphe, [], False, False, E, beta, True), "avec un total de noeuds parcourues de", total)
