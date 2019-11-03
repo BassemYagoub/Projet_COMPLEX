@@ -277,7 +277,7 @@ def bound(G, c, showSteps=False):
 
 #4.1
 total = 0
-def branchbound(G, c=[], avecCoupe=False, showSteps=False, borne=-1):
+def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0):
     global total
     total += 1
     if(showSteps):
@@ -289,12 +289,11 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, borne=-1):
             dessine(G)
         return c
 
-    borneInf = 0
     if(avecCoupe):
         borneInf = bound(G, c, showSteps)
         if(showSteps):
-            print("---borne---", borne)
-        if(len(c) >= borne+1 and borne >= 0):
+            print("---borne---", borneInf)
+        if(len(c) >= borneInf+epsilon):
             if(showSteps):
                 print("-----Elagage!-----")
                 dessine(G)
@@ -304,12 +303,12 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, borne=-1):
     if(showSteps):
         print("-------DESCENTE GAUCHE--------")
         dessine(G)
-    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps, borneInf)
+    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps, epsilon)
     if(showSteps):
         print("-------REMONTEE GAUCHE--------\n\n")
         print("-------DESCENTE DROITE--------")
         dessine(G)
-    g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps, borneInf)
+    g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps, epsilon)
     if(showSteps):
         print("-------REMONTEE DROITE--------\n\n")
         print("::::Choix entre", g_u, "et", g_v, "::::")
@@ -332,10 +331,11 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, borne=-1):
 #----------------------------------------------------------
 
 # graphe = importGrapheFromTxt("exempleinstance2.txt")
-nbV = 4
+nbV = 7
+E = 4
 graphe = creerInstance(nbV, 0.7, False)
 # compare_couvs(10, 200)
 #graphe = importGrapheFromTxt("exemple_branchbound.txt")
 print("b&b sans borne inferieur donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
 total = 0
-print("b&b avec borne inferieur donne le resultat", branchbound(graphe, [], True, True), "avec un total de noeuds parcourues de", total)
+print("b&b avec borne inferieur donne le resultat", branchbound(graphe, [], True, epsilon=E), "avec un total de noeuds parcourues de", total)
