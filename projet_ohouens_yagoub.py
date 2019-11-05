@@ -371,20 +371,67 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], 
 #----------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------MAIN------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
-nbV = 15
-E = 8
-beta = [1 for k in range(nbV+1)]
-p = 1/math.sqrt(nbV)
-if(nbV < 7):
-    p = 0.7
-graphe = creerInstance(nbV, p, True)
-# compare_couvs(10, 200)
-# graphe = importGrapheFromTxt("exemple_branchbound.txt")
-# graphe = importGrapheFromTxt("exempleinstance2.txt", True)
-print("b&b sans borne inferieur sans optimisation donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
-total = 0
-print("b&b avec borne inferieur sans optimisation donne le resultat", branchbound(graphe, [], True, False, E, beta), "avec un total de noeuds parcourues de", total)
-total = 0
-print("b&b sans borne inferieur avec optimisation donne le resultat", branchbound(graphe, [], False, False, E, beta, True), "avec un total de noeuds parcourues de", total)
-total = 0
-print("b&b sans borne inferieur avec super optimisation donne le resultat", branchbound(graphe, [], False, False, E, beta, True, True), "avec un total de noeuds parcourues de", total)
+# nbV = 12
+# beta = [1 for k in range(nbV+1)]
+# p = 1/math.sqrt(nbV)
+# if(nbV < 7):
+#     p = 0.5
+# graphe = creerInstance(nbV, p)
+# E = graphe.number_of_edges()/3
+# # compare_couvs(10, 200)
+# # graphe = importGrapheFromTxt("exemple_branchbound.txt")
+# # graphe = importGrapheFromTxt("exempleinstance2.txt", True)
+# print("b&b sans borne inferieur sans optimisation donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
+# total = 0
+# print("b&b avec borne inferieur sans optimisation donne le resultat", branchbound(graphe, [], True, True, E, beta), "avec un total de noeuds parcourues de", total)
+# total = 0
+# print("b&b sans borne inferieur avec optimisation donne le resultat", branchbound(graphe, [], False, False, E, beta, True), "avec un total de noeuds parcourues de", total)
+# total = 0
+# print("b&b sans borne inferieur avec super optimisation donne le resultat", branchbound(graphe, [], False, False, E, beta, True, True), "avec un total de noeuds parcourues de", total)
+
+#----------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------Experience------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------
+cpt = 0
+x = []
+y1 = []
+y2 = []
+y3 = []
+y4 = []
+for i in range(2, 12):
+    nbV = i
+    p = [1/math.sqrt(nbV)]+[0.3, 0.4, 0.5, 0.6, 0.7]
+    beta = [1 for k in range(nbV+1)]
+    for j in range(len(p)):
+        cpt += 1
+        x.append(cpt)
+        graphe = creerInstance(nbV, p[j])
+        E = graphe.number_of_edges()/3
+        if(j == 0):
+            E = graphe.number_of_edges()/5
+
+        branchbound(graphe, [])
+        y1.append(total)
+        total = 0
+
+        branchbound(graphe, [], True, False, E, beta)
+        y2.append(total)
+        total = 0
+
+        branchbound(graphe, [], False, False, E, beta, True)
+        y3.append(total)
+        total = 0
+
+        branchbound(graphe, [], False, False, E, beta, True, True)
+        y4.append(total)
+        total = 0
+plt.plot(x, y1, label="b&b sans coupe sans optimisation")
+plt.plot(x, y2, label="b&b avec coupe sans optimisation")
+plt.plot(x, y3, label="b&b sans coupe avec optimisation")
+plt.plot(x, y4, label="b&b sans coupe avec super optimisation")
+
+plt.xlabel('N-ieme instance de graphes')
+plt.ylabel('Nombre de noeuds parcourues')
+plt.legend(loc='upper left')
+plt.title('Comparaison du nombre de noeud parcourues des branchements en fonction des graphes')
+plt.show()
