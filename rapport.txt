@@ -1,0 +1,40 @@
+Bornes
+
+/*insérer les démonstrations des 3 bornes ici*/
+
+L'algorithme de branchement programmé précedmment retourne forcément une couverture de sommet minimale.
+En effet supposons que cet algorithme retourne un couverture qui n'est pas minimale,
+    cela voudrait dire que quelque part dans la contruction de l'arbre lors de la remonté
+    on aurait choisie une branche avec une |couverture| > |couverture minimale|
+    Or cela est impossible
+
+Lors de la construction de notre arbre les branches qui sont donc de longueur supérieurs à celle de la
+couverture minimale ne seront jamais prises.
+Sachant cela on pourrait ce décider de couper à ce moment précis pour économiser le nombre de noeuds parcourues,
+donc le temps d'execution du programme.
+
+Le but du jeu est de savoir avant la construction de l'arbre, quelle sera la cardinalité d'une des couvertures minimales
+du graphe pour pouvoir définir les différentes coupes lors des branchements.
+Sachant que bInf = max{b1, b2, b3}
+On sait que |C| >= bInf, de ce fait lors des différents branchements, tant que |C| < bInf on est certain que aucune couverture
+n'a été trouvé.
+On sait que |Cminimale| est la plus petite valeur possible de couverture donc on peut traduire notre relation précédente par
+    |Cminimale| >= bInf
+
+Dans notre arbre quand on veut couper au noeud tel que |C| >= bInf, 2 cas se présentes:
+    -bInf = |Cminimale|, donc notre coupe est juste
+    -bInf < |Cminimale|, on a donc coupé trop tot, car on a pas eu la réelles cardinalité de la couverture minimale
+        Vu que la cardinalité de toutes les couvertures des branches coupés seront inférieur à |Cminimale|
+        Cela implique qu'on ne descendra jamais jusqu'aux feuilles de l'abre !
+        On aura donc une couverture fausse.
+
+Pour remédier à ce problème, l'ajout d'un  ε > 0 à la borne inf permet de ne pas couper trop tot.
+Ainsi on obtiendrait |Cminimale| <= bInf +  ε
+Dans notre arbre quand on voudrait couper, on voudrait obtenir ces 2 nouvelles situations:
+    -bInf = |Cminimale|, donc la coupe est juste
+    -bInf > |Cminimale|, on a coupé un peu tard mais on à économiser des noeuds, car on est sur de tomber sur |Cminimale|
+    dans une autre branche.
+
+Pour obtenir cette situation il faut donc jouer sur le  ε.
+Si il est trop petit, l'inégalité |Cminimale| <= bInf +  ε ne sera plus respecté, cela reviendra à notre problème de départ.
+Si il est trop grand, on ne coupera jamais, cela reviendra au branchement sans coupe.
