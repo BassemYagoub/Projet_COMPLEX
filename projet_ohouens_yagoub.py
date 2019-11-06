@@ -80,7 +80,7 @@ def sousGraphe(G, v, show=False):
 
     return : un graphe graphe G2 obtenu à partir de G en supprimant le(s) sommet(s) v (ou de v)
     """
-    G2 = nx.Graph(G)
+    G2 = G.copy()
     if(isinstance(v, int)):
         G2.remove_node(v)
     if(isinstance(v, list)):
@@ -161,11 +161,17 @@ def algo_glouton(G):
     return: Une couverture de G
     """
     c = []
-    E = G.edges #tableau des aretdees modifié dynamiquement dans la boucle
+    G2 = nx.Graph(G)
+    E = G2.edges #tableau des aretdees modifié dynamiquement dans la boucle
     #aretes_couvs = []
     #print("e", E)
     while(len(E) > 0):
-        v = degreMax(G) #sommet de degre max
+        delta = -1
+        v = -1
+        for noeud, deg in G2.degree:
+            if deg > delta:
+                delta = deg
+                v = noeud #sommet de degre max
         #print(v)
         c.append(v)
         aretes_suppr = [arete for arete in E if( (arete[0]==v) or (arete[1]==v) )] #liste d'aretes de v à supprimer
@@ -178,7 +184,7 @@ def algo_glouton(G):
         aretes_couvs.append(aretes_suppr[i]) #premiere arete qu'on va supprimer sera dans les aretes couvertes
         #print(aretes_couvs)
         """
-        G.remove_edges_from(aretes_suppr)
+        G2.remove_edges_from(aretes_suppr)
         #dessine(G)
         #plt.show()
     return c
@@ -255,7 +261,7 @@ def compare_couvs(n_min, n_max, nb_ites=20, nb_moys=5, dessin=False):
 #---------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------4.1 & 4.2 & 4.3------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------
-def bound(G, c, showSteps=False):
+def bound(G, c, showSteps=False, option=0):
     n = len(G)
     m = G.number_of_edges()
     delta = 1
@@ -263,7 +269,10 @@ def bound(G, c, showSteps=False):
         if deg > delta:
             delta = deg
     b1 = m/delta
-    b2 = len(algo_couplage(G))/2
+    if(option == 1):
+        b2 = len(algo_glouton(G))/2
+    else:
+        b2 = len(algo_couplage(G))/2
     b3 = (2*n-1-math.sqrt((2*n-1)**2-8*m))/2
     b = max(b1, b2, b3)
     if(showSteps):
@@ -312,8 +321,9 @@ def edgeMax(G, showSteps=False):
     if(showSteps):
         print("edgeMax", arete)
     return buff
+
 total = 0
-def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], optmized=False, uMax=False):
+def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], optmized=False, uMax=False, option=0):
     global total
     total += 1
     if(showSteps):
@@ -326,7 +336,7 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], 
         return c
 
     if(avecCoupe):
-        borneInf = bound(G, c, showSteps)
+        borneInf = bound(G, c, showSteps, option)
         if(showSteps):
             print("---borne---", borneInf)
         if(len(c) >= borneInf+epsilon):
@@ -343,16 +353,16 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], 
     if(showSteps):
         print("-------DESCENTE GAUCHE--------")
         dessine(G)
-    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps, epsilon, coupe, optmized, uMax)
+    g_u = branchbound(sousGraphe(G, u), c+[u], avecCoupe, showSteps, epsilon, coupe, optmized, uMax, option)
     if(showSteps):
         print("-------REMONTEE GAUCHE--------\n\n")
         print("-------DESCENTE DROITE--------")
         dessine(G)
     if(not optmized):
-        g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps, epsilon, coupe, optmized, uMax)
+        g_v = branchbound(sousGraphe(G, v), c+[v], avecCoupe, showSteps, epsilon, coupe, optmized, uMax, option)
     else:
         GSu, cSu = amelioration(G, u, v, showSteps)
-        g_v = branchbound(sousGraphe(GSu, v), c+cSu+[v], avecCoupe, showSteps, epsilon, coupe, optmized, uMax)
+        g_v = branchbound(sousGraphe(GSu, v), c+cSu+[v], avecCoupe, showSteps, epsilon, coupe, optmized, uMax, option)
     if(showSteps):
         print("-------REMONTEE DROITE--------\n\n")
         print("::::Choix entre", g_u, "et", g_v, "::::")
@@ -371,7 +381,7 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], 
 #----------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------MAIN------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
-# nbV = 12
+# nbV = 8
 # beta = [1 for k in range(nbV+1)]
 # p = 1/math.sqrt(nbV)
 # if(nbV < 7):
@@ -383,7 +393,7 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], 
 # # graphe = importGrapheFromTxt("exempleinstance2.txt", True)
 # print("b&b sans borne inferieur sans optimisation donne le resultat", branchbound(graphe, []), "avec un total de noeuds parcourues de", total)
 # total = 0
-# print("b&b avec borne inferieur sans optimisation donne le resultat", branchbound(graphe, [], True, True, E, beta), "avec un total de noeuds parcourues de", total)
+# print("b&b avec borne inferieur sans optimisation donne le resultat", branchbound(graphe, [], True, False, E, beta, option=0), "avec un total de noeuds parcourues de", total)
 # total = 0
 # print("b&b sans borne inferieur avec optimisation donne le resultat", branchbound(graphe, [], False, False, E, beta, True), "avec un total de noeuds parcourues de", total)
 # total = 0
@@ -392,12 +402,57 @@ def branchbound(G, c=[], avecCoupe=False, showSteps=False, epsilon=0, coupe=[], 
 #----------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------Experience------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------
+# cpt = 0
+# x = []
+# y1 = []
+# y2 = []
+# y3 = []
+# y4 = []
+# for i in range(2, 12):
+#     nbV = i
+#     p = [1/math.sqrt(nbV)]+[0.3, 0.4, 0.5, 0.6, 0.7]
+#     beta = [1 for k in range(nbV+1)]
+#     for j in range(len(p)):
+#         cpt += 1
+#         x.append(cpt)
+#         graphe = creerInstance(nbV, p[j])
+#         E = graphe.number_of_edges()/3
+#         if(j == 0):
+#             E = graphe.number_of_edges()/5
+#
+#         branchbound(graphe, [])
+#         y1.append(total)
+#         total = 0
+#
+#         branchbound(graphe, [], True, False, E, beta)
+#         y2.append(total)
+#         total = 0
+#
+#         branchbound(graphe, [], False, False, E, beta, True)
+#         y3.append(total)
+#         total = 0
+#
+#         branchbound(graphe, [], False, False, E, beta, True, True)
+#         y4.append(total)
+#         total = 0
+# plt.plot(x, y1, label="b&b sans coupe sans optimisation")
+# plt.plot(x, y2, label="b&b avec coupe sans optimisation")
+# plt.plot(x, y3, label="b&b sans coupe avec optimisation")
+# plt.plot(x, y4, label="b&b sans coupe avec super optimisation")
+#
+# plt.xlabel('N-ieme instance de graphes')
+# plt.ylabel('Nombre de noeuds parcourues')
+# plt.legend(loc='upper left')
+# plt.title('Comparaison du nombre de noeud parcourues des branchements en fonction des graphes')
+# plt.show()
+
+#----------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------Experience------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------
 cpt = 0
 x = []
 y1 = []
 y2 = []
-y3 = []
-y4 = []
 for i in range(2, 12):
     nbV = i
     p = [1/math.sqrt(nbV)]+[0.3, 0.4, 0.5, 0.6, 0.7]
@@ -410,28 +465,20 @@ for i in range(2, 12):
         if(j == 0):
             E = graphe.number_of_edges()/5
 
-        branchbound(graphe, [])
-        y1.append(total)
+        st = time.time()
+        branchbound(graphe, [], True, False, E, beta, option=0)
+        y1.append(time.time()-st)
         total = 0
 
-        branchbound(graphe, [], True, False, E, beta)
-        y2.append(total)
+        st = time.time()
+        branchbound(graphe, [], True, False, E, beta, option=1)
+        y2.append(time.time()-st)
         total = 0
-
-        branchbound(graphe, [], False, False, E, beta, True)
-        y3.append(total)
-        total = 0
-
-        branchbound(graphe, [], False, False, E, beta, True, True)
-        y4.append(total)
-        total = 0
-plt.plot(x, y1, label="b&b sans coupe sans optimisation")
-plt.plot(x, y2, label="b&b avec coupe sans optimisation")
-plt.plot(x, y3, label="b&b sans coupe avec optimisation")
-plt.plot(x, y4, label="b&b sans coupe avec super optimisation")
+plt.plot(x, y1, label="b&b coupe avec couplage")
+plt.plot(x, y2, label="b&b coupe avec glouton")
 
 plt.xlabel('N-ieme instance de graphes')
-plt.ylabel('Nombre de noeuds parcourues')
+plt.ylabel('Temps d\'execution(s)')
 plt.legend(loc='upper left')
-plt.title('Comparaison du nombre de noeud parcourues des branchements en fonction des graphes')
+plt.title('Comparaison du temps d\'execution des branchements en fonction des graphes')
 plt.show()

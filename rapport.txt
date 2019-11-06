@@ -38,3 +38,96 @@ Dans notre arbre quand on voudrait couper, on voudrait obtenir ces 2 nouvelles s
 Pour obtenir cette situation il faut donc jouer sur le  ε.
 Si il est trop petit, l'inégalité |Cminimale| <= bInf +  ε ne sera plus respecté, cela reviendra à notre problème de départ.
 Si il est trop grand, on ne coupera jamais, cela reviendra au branchement sans coupe.
+#######################################################################################################################################
+
+Pour tester l'efficacité des nouvelles méthodes de branchement on va effectuer cette Expérience.
+    Générer n graphes différents ordonné par leur nombres de Sommets et d'arretes de manière croissante.
+    Pour chaque graphe:
+        S'assurer que les différentes méthodes de branchement retournent bien une couverture de sommet.
+        Comparer le nombre de noeuds exploré pour les différentes méthodes.
+
+On obtient ces résultats:
+/****************INSERER LES GRAPHES ICI***************/
+
+On peut remarquer que l'optimisation du branchement réduit considérablement le nombre de noeuds parcourues.
+En effet cela est du au fait qu'il n'y a plus de doublons au niveau des branchements d'arretes lors de la construction de l'abre.
+En améliorant le branchement on a ainsi réduit le nombre de noeuds que l'on parcourera au maximum.
+
+Supposons un graphe G connexe d'au moins 3 sommets.
+Supposons u, un sommet de G de degré 1.
+Montrons qu'il existe toujours une couverture optimale de G qui ne contient pas u.
+    supposons par l'absurde qu'il n'existe pas de couverture optimale de G qui ne contient pas u.
+        Cela voudrait dire que le sommet voisin Ng(u) n'offre pas de couverture équivalente ou plus du sommet u.
+        Or cela est impossible, car le sommet Ng(u) couvre la même arrête que u.
+        De plus G état connexe, Ng(u) est au moins de dégré 2, donc Ng(u) peut aussi couvrir d'autres arretes
+        Donc c[u] ⊆ c[Ng(u)]
+
+L'intéret d'ajouter ce test nous permets de supprimer toutes les couvertures dites "inutiles".
+Ainsi lors de la construction de l'arbre, moins d'étapes seront necessaires pour atteindre les feuilles.
+######################################################################################################################################
+
+Montrons b2.
+Soit |M| = nombre d'arrete du couplage M
+Si e ∈ M, alors e ∈ G
+Donc C une couverture de G et de M
+On obtient:
+    ∀e ∈ M, ∃v ∈ C, e est adjacente à V
+Ainsi:
+    ∀e1, e2 ∈ M avec e1 != e2, ∃v1, v2 ∈ C tel que e1 est adjacente à v1 et e2 est adjacente à v2
+De plus
+    e1 != e2, elles ne partagent donc aucun sommet en commun car M est un couplage de G
+Donc
+    v1 != v2
+On en déduit donc que ∀e ∈ M, ∄v ∈ C tel que e est adjacent à v
+Donc |C| >= |M| si |M| >= 2
+
+Si |M| = 0 alors |M| <= |C| car |C| >= 0
+Si |M| = 1
+Alors pour e ∈ M, ∃v ∈ C tel que e est adjacent à v
+Donc |C| >= 1 = |M|
+
+Montrons b3.
+On remarque le maximim d'aretes d'un graphe à n sommets est atteint quand le graphe est complet.
+Dans ce cas
+    m = n(m-1)/2
+Donc m <= m(n-1)/2
+On pose:
+    f: ℝ -> ℝ
+    x -> x^2 + (1-2n)x + 2m
+f(|C|) = |C|^2 + (1-2n)|C| + 2m
+De plus
+    |C| <= n, m <= (n-1)m/2
+Donc
+    f(|C|) <= n^2 + (1-2n)m + (n-1)m
+           <= 0
+Donc
+    f(x) <= 0 <=> x ∈ [x1, x2]
+où
+    x1 = -((1-2n) - sqrt((1-2n)^2-8m))/2
+       = -(2n - 1 - sqrt((2n-1)^2-8m))/2
+    x2 = -((1-2n) + sqrt((1-2n)^2-8m))/2
+       = -(2n - 1 + sqrt((2n-1)^2-8m))/2
+or f(|C|) <= 0
+Donc |C| ∈ [x1, x2]
+Donc (2n-1-sqrt((2n-1)^2-8m))/2 <= |C| <= x2
+
+Montrons b1.
+Supposons l'existence de la couverture minimale de C
+Suposons le graphe étoile, car c'est celui minimisant m/∆
+Supposons par l'absurde que m/∆ > |Cminimale|
+Cela équivaudrait à 1 > |Cminimale|
+    => |Cminimale| >= 0, donc qu'il n'existerai pas de couverture.
+    Cela est contradictoire car il en existe une minimale pour |C| = 1
+Par récurrence si on modifie une arrete du graphe étoile pour ne pas la placer sur le sommet(∆)
+    couverture+1 > borne+1, car ∆>=1 et ∆<=m
+Donc |Cminimale|+1 >= (m+1)/∆
+Supposons un graphe en ligne de n sommets tel que ∆=2, car c'est celui maximisant m/∆
+Supposons par l'absurde que m/∆ > |Cminimale|
+Cela équivaudrait à n/2 > n/2
+    Cela est contradictoire
+Par récurrence si on modifie une arete du graphe en ligne pour la placer sur le sommet(∆)
+    couverture+1 > borne+1, car ∆>=1 et ∆<=m
+Donc |Cminimale|+1 >= m/(∆+1)
+Il n'existe pas d'instance de graphe offrant de meilleur borne minimale ou maximale
+à m/∆
+Donc pour toute instance de graphe |Cminimale| >= m/∆
